@@ -1,5 +1,7 @@
 # Switch2Emu
 
+This is Doug's continuation of [PHENGOX/Switch2Emu](https://github.com/PHENGOX/Switch2Emu). See the [current fork status and next milestones](docs/FORK_STATUS.md). The introduction and milestone history below originate upstream.
+
 I am developing this emulator with the help of artificial intelligence for coding, testing, and technical analysis.
 
 **An English translation of all project files will be provided in a future update.**
@@ -8,7 +10,7 @@ An experimental C++20 emulator aiming to eventually run Nintendo Switch 2 games 
 
 A C++20 ARM64 machine prototype featuring partial integer/FP/SIMD CPU support, a reference HLE runtime, and bounded support for static ELF/NRO formats. It does not run Switch 2 games.
 
-Latest milestone: [application identity, messages, and focus](docs/LIBNX_APPLET_STATE.md). The libnx client obtains a stable process identity and uses an actual message event and its original waiting routine. It now stops at AcquireForegroundRights, before main. This profile requires `--hle-reference --homebrew-entry`. Next priority: foreground acquisition and the startup dependencies observed during execution. The interactive demo remains available through `.\tools\run_interactive.ps1`.
+Latest fork milestone: [foreground-rights acquisition](docs/FOREGROUND_RIGHTS.md). The unchanged libnx client now passes AcquireForegroundRights and stops at SetFocusHandlingMode, still before main. This profile requires `--hle-reference --homebrew-entry`. See the [current scope and acceptance criteria](docs/FORK_STATUS.md) for the next steps. The interactive demo remains available through `.\tools\run_interactive.ps1`.
 
 ## Build and test (PowerShell)
 
@@ -77,6 +79,10 @@ Chosen direction: a hybrid application emulator with HLE system services. First 
 - [Knowledge inventory and public sources](docs/SWITCH2_RESEARCH.md)
 
 These documents distinguish the ARM64 prototype from native Switch 2 interfaces that still need validation. The long-term goal is playable games on Windows; no game compatibility is currently claimed.
+
+## Historical milestones
+
+The sections below retain the original milestone results and suite counts. For current scope and the next task, use [Fork status](docs/FORK_STATUS.md).
 
 ## First C program and stack instructions
 

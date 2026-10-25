@@ -1,5 +1,15 @@
 # Switch2Emu
 
+## Fork continuation
+
+This is Doug's continuation of [PHENGOX/Switch2Emu](https://github.com/PHENGOX/Switch2Emu).
+See the [current status, verified scope and next milestones](docs/FORK_STATUS.md).
+The project remains an ARM64/HLE research prototype with no validated native
+Switch 2 or commercial-game compatibility. The original author's introduction
+is preserved below.
+
+## Original project introduction
+
 Hey everyone,
 
 First of all, I'm sorry for the misunderstanding surrounding my project. I'm still new to all of this, and I honestly didn't expect it to get this much attention.
@@ -22,7 +32,7 @@ Je développe cet émulateur avec l’aide d’une intelligence artificielle pou
 
 Prototype de machine ARM64 en C++20 : CPU entier/FP/SIMD partiel, runtime HLE de référence et formats ELF/NRO statiques bornés. Il ne lance pas de jeux Switch 2.
 
-Dernière étape : [identité, messages et focus](docs/LIBNX_APPLET_STATE.md). Le client libnx obtient une identité de processus stable et utilise un véritable événement de messages et sa routine d'attente originale. Il s'arrête désormais sur AcquireForegroundRights, avant main. Le profil exige `--hle-reference --homebrew-entry`. Prochaine priorité : acquisition du premier plan et dépendances observées du démarrage. La démo interactive reste accessible par `.\tools\run_interactive.ps1`.
+État actuel du fork : [acquisition du premier plan](docs/FOREGROUND_RIGHTS.md). Le client libnx franchit AcquireForegroundRights puis s'arrête sur SetFocusHandlingMode, avant main. Le profil exige `--hle-reference --homebrew-entry`. Les [jalons suivants et limites](docs/FORK_STATUS.md) sont consignés séparément. La démo interactive reste accessible par `.\tools\run_interactive.ps1`.
 
 ## Compiler et tester (PowerShell)
 

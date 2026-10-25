@@ -29,7 +29,10 @@ int main(int argc,char** argv)
     for(unsigned i=0;i<20000 && part.stop==Machine::Stop::Budget;++i) { part=sliced.run(7);count+=part.instructions; }
     check(part.stop==result.stop && part.exitCode==result.exitCode && count==result.instructions,"default failure path deterministic across small budgets");
     for(unsigned i=0;i<32;++i) check(sliced.ram.read64(report+8*i)==value(i),"default init diagnostic reports match");
-    struct Exchange { uint32_t handle=0;uint64_t transport=0;Ipc::Buffer request{},response{}; };
+    struct Exchange {
+        uint32_t handle=0;uint64_t transport=0;Ipc::Buffer request{},response{};
+        bool foregroundAcquired=false,focused=false;
+    };
     std::vector<Exchange> calls;std::vector<uint32_t> closed;
     Machine traced(false,true,true);check(traced.load(argv[1]),"trace fixture");const auto tls=traced.process().mainThread().localRegion;
     Machine::Result step{Machine::Stop::Budget,0};
@@ -39,14 +42,37 @@ int main(int argc,char** argv)
         if(svc && id==0x21) { e.handle=uint32_t(traced.cpu.readRegister(0));e.request=snapshot(traced.ram,tls); }
         if(svc && id==0x16) closed.push_back(uint32_t(traced.cpu.readRegister(0)));
         step=traced.run(1);
-        if(svc && id==0x21) { e.transport=traced.cpu.readRegister(0);e.response=snapshot(traced.ram,tls);calls.push_back(e); }
+        if(svc && id==0x21) {
+            e.transport=traced.cpu.readRegister(0);e.response=snapshot(traced.ram,tls);
+            e.foregroundAcquired=traced.process().appletForegroundAcquired();e.focused=traced.process().appletFocused();
+            calls.push_back(e);
+        }
     }
     check(step.stop==Machine::Stop::Exited && step.exitCode==initFailAm,"trace ends at real diagnostic return, not a missing-dependency trap");
     std::vector<std::string> requested;Ipc::Buffer apmLookup{},openRequest{},registration{};uint32_t apm=0,child=0,applet=0,messageEvent=0;
+    unsigned acquisitions=0;
+    std::vector<std::pair<uint32_t,uint32_t>> missingMethods;
+    std::vector<std::array<uint8_t,3>> focusModes;
     for(const auto& e:calls) {
         if(e.transport==0 && get(e.response,8)==2 && get(e.response,32)==0x4F434653 && get(e.response,40)==0)
             messageEvent=uint32_t(get(e.response,12));
         if(get(e.request,0)!=4) continue;
+        if(applet && e.handle==applet) {
+            Ipc::DomainRequest domain;
+            if(!Ipc::parseDomain(e.request,domain) && !domain.close) {
+                if(domain.object==7 && domain.command==10) {
+                    ++acquisitions;
+                    check(!domain.sendPid && !domain.payloadSize && e.transport==0 && get(e.response,40)==0 &&
+                        e.foregroundAcquired && e.focused,"original foreground request succeeds and publishes process rights");
+                }
+                if(e.transport==0 && get(e.response,40)!=0) {
+                    missingMethods.emplace_back(domain.object,domain.command);
+                    check(get(e.response,40)==Ipc::UnknownCommand,"remaining applet methods return explicit unsupported errors");
+                    if(domain.object==6 && domain.command==13 && domain.payloadSize==3)
+                        focusModes.push_back({e.request[domain.payload],e.request[domain.payload+1],e.request[domain.payload+2]});
+                }
+            }
+        }
         const bool pid=get(e.request,4)&0x80000000U;const size_t cmif=pid?32:16;
         if(get(e.request,cmif)!=0x49434653) continue;
         const auto command=get(e.request,cmif+8);
@@ -73,6 +99,10 @@ int main(int argc,char** argv)
         }
     }
     check(requested==std::vector<std::string>{"set:sys","apm","appletOE"},"real native service order remains unchanged");
+    check(acquisitions==1 && missingMethods==std::vector<std::pair<uint32_t,uint32_t>>{{6,13},{6,13}} &&
+        focusModes==std::vector<std::array<uint8_t,3>>{{0,0,1},{1,1,0}},
+        "foreground acquisition advances the unchanged NRO to SelfController SetFocusHandlingMode, including cleanup");
+    check(!traced.process().appletForegroundAcquired(),"diagnostic exit retires foreground rights");
     check(apm && child && applet && messageEvent && closed==std::vector<uint32_t>{messageEvent,applet,child,apm},
         "original failure cleanup closes the real message event, applet and APM sessions");
     check(get(openRequest,0)==4 && get(openRequest,4)==8 && get(openRequest,24)==0,"capture authentic no-payload APM OpenSession");

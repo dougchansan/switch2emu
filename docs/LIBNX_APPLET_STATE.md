@@ -1,5 +1,7 @@
 # Identité, messages et focus
 
+> Historical milestone / planning record. See [current fork status](FORK_STATUS.md) and [foreground-rights continuation](FOREGROUND_RIGHTS.md) for the latest implementation boundary.
+
 Ce palier prolonge les domaines appletOE dans le profil `--hle-reference --homebrew-entry`. Il reste une référence libnx historique Switch, sans validation native Switch 2.
 
 ## Identité du processus

@@ -1,5 +1,7 @@
 # Initialisation applicative par défaut et première session APM
 
+> Historical milestone / planning record. See [current fork status](FORK_STATUS.md) and [foreground-rights continuation](FOREGROUND_RIGHTS.md) for the latest implementation boundary.
+
 Le 25 octobre 2026, une nouvelle cible exécute le **`__appInit` original de libnx**, avec ses clients setsys, applet et APM originaux. Elle ne remplace plus les hooks applicatifs par une initialisation minimale. La révision reste `b156b4774fb2df7b93402169509266da7547fc4c` et les sources libnx sont compilées sans modification.
 
 ## Blocage observé, puis dépassé
