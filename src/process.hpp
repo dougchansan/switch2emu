@@ -37,6 +37,7 @@ public:
     uint64_t appletResourceId() const { return applet.id; }
     bool appletActive() const { return applet.live; }
     bool appletFocused() const { return applet.focused; }
+    bool appletForegroundAcquired() const { return applet.foregroundAcquired; }
     bool setAppletFocus(bool focused);
     uint64_t systemTick() const { return (virtualNanoseconds/625)*12+((virtualNanoseconds%625)*12)/625; }
     static constexpr uint64_t HeapBase = 0x200000, HeapCapacity = 0x800000, HeapAlignment = 0x200000;
@@ -77,7 +78,7 @@ private:
     struct Event { bool signaled = false, serviceManaged = false; };
     struct AppletState {
         uint64_t id=0;
-        bool live=false, focused=true;
+        bool live=false, focused=true, foregroundAcquired=false;
         std::deque<uint32_t> messages;
         std::shared_ptr<Event> event;
     } applet;

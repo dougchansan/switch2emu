@@ -224,7 +224,8 @@ void Process::checkpoint(const CPU& cpu, State next)
     at(active).context = cpu.captureContext();
     if (next == State::Exited || next == State::Faulted)
     {
-        applet.live=false;applet.messages.clear();if(applet.event) applet.event->signaled=false;
+        applet.live=false;applet.foregroundAcquired=false;
+        applet.messages.clear();if(applet.event) applet.event->signaled=false;
         thread.state = next;
         if (workerCreated) worker.state = next;
         waits = {};
@@ -328,7 +329,7 @@ Process::Action Process::dispatch(uint16_t id, CPU& cpu, Bus& bus)
         Domain::Object* pendingObject = nullptr;
         std::shared_ptr<ServiceState> pendingObjectService;
         std::shared_ptr<Event> pendingEvent;
-        bool consumeAppletMessage=false;
+        bool consumeAppletMessage=false, acquireForeground=false;
         uint32_t status;
         auto prepareSession = [&](bool clone) {
             for (auto& candidate : handles) if (!candidate.occupied()) { pendingSlot = &candidate; break; }
@@ -403,10 +404,15 @@ Process::Action Process::dispatch(uint16_t id, CPU& cpu, Bus& bus)
                         }
                         if(open && (domainRequest.sendPid || domainRequest.payloadSize)) { open=false;code=Ipc::InvalidArguments; }
                     }
-                    if(object && object->service->kind==ServiceState::Kind::WindowController && domainRequest.command==1) {
+                    if(object && object->service->kind==ServiceState::Kind::WindowController &&
+                       (domainRequest.command==1 || domainRequest.command==10)) {
                         if(!applet.live) code=InvalidState;
                         else if(domainRequest.sendPid || domainRequest.payloadSize) code=Ipc::InvalidArguments;
-                        else { code=Success;scalar=applet.id;scalarSize=8; }
+                        else if(domainRequest.command==1) { code=Success;scalar=applet.id;scalarSize=8; }
+                        // Local reference policy: first acquisition requires focus. Rights belong
+                        // to the process and remain acquired across later host focus changes.
+                        else if(!applet.foregroundAcquired && !applet.focused) code=InvalidState;
+                        else { code=Success;acquireForeground=true; }
                     }
                     if(object && object->service->kind==ServiceState::Kind::CommonState &&
                        (domainRequest.command==0 || domainRequest.command==1 || domainRequest.command==9)) {
@@ -507,6 +513,7 @@ Process::Action Process::dispatch(uint16_t id, CPU& cpu, Bus& bus)
         if (manager.initialize) handle->session->service->initialized = true;
         if(pendingEvent) { *pendingSlot={};pendingSlot->id=nextHandle++;pendingSlot->event=std::move(pendingEvent); }
         if(consumeAppletMessage) { applet.messages.pop_front();applet.event->signaled=!applet.messages.empty(); }
+        if(acquireForeground) applet.foregroundAcquired=true;
         if(pendingDomain) handle->session->domain=std::move(pendingDomain);
         if(pendingObject) *pendingObject={objectDomain->nextId++,std::move(pendingObjectService)};
         if(pendingFrame) { lastFrame=std::move(pendingFrame); ++presentedFrames; }

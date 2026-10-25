@@ -1,5 +1,7 @@
 # Stratégie Switch 2
 
+> Historical milestone / planning record. See [current fork status](FORK_STATUS.md) and [foreground-rights continuation](FOREGROUND_RIGHTS.md) for the latest implementation boundary.
+
 Décision de travail du 24 octobre 2026. Objectif utilisateur : un émulateur sur PC capable, à terme, de lancer des jeux Switch 2. Ce document décrit la direction retenue ; il ne revendique aucune compatibilité actuelle avec ces jeux.
 
 Priorité actualisée le 25 octobre : l'[audit de compatibilité](COMPATIBILITY_AUDIT.md) retient le hello-world public switch-examples/libnx comme cible externe historique, non native Switch 2. Le [chargeur NRO0 statique](NRO_LOADER.md) est testé ; le prochain verrou est le contrat de démarrage homebrew et MOD0/relocations. Le CPU continuera d'évoluer selon les blocages mesurés, sans assimiler les démos emu:* à une application externe exécutée.

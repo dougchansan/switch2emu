@@ -10,14 +10,14 @@
     "set.c": "48A525415DAABF62EB189DEAA2C86FC1673FD0D437CFE054B5C373E38697DA9D"
   },
   "nro_sha256": "10F4CF1CB2CD69FCB75C8935CB39A9F84210114236688BB50F3495AF2409553F",
-  "instructions": 7428,
+  "instructions": 7732,
   "diagnostic": 16217,
   "diagnostic_name": "MAKERESULT(Module_Libnx, LibnxError_InitFail_AM)",
   "native_service_order": ["set:sys", "apm", "appletOE"],
-  "ipc_exchanges": 35,
+  "ipc_exchanges": 36,
   "domain_root_id": 1,
   "domain_output_objects": [2,3,4,5,6,7,8,9,10],
-  "unsupported_operation": "IWindowController::AcquireForegroundRights (command 10)",
+  "unsupported_operation": "ISelfController::SetFocusHandlingMode (command 13)",
   "main_reached": false,
-  "scope": "Original default __appInit, applet/APM clients and original wait.c; process resource identity, copied message event and focus notifications are live. Foreground acquisition remains unsupported."
+  "scope": "Original default __appInit, applet/APM clients and original wait.c; process identity, copied message event, focus notifications and local foreground-rights acquisition are live. The unchanged NRO stops at SetFocusHandlingMode; constructors and main remain unreachable."
 }

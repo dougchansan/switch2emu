@@ -1,5 +1,7 @@
 # Audit : passer des démos à une application externe
 
+> Historical milestone / planning record. See [current fork status](FORK_STATUS.md) and [foreground-rights continuation](FOREGROUND_RIGHTS.md) for the latest implementation boundary.
+
 Audit du 25 octobre 2026, fondé sur le dépôt et sur des sources publiques. Les clients actuels sont écrits pour le profil du projet et ses services emu:*. Leur réussite ne mesure pas la compatibilité avec un SDK complet ni avec la Switch 2 native.
 
 ## Cible externe retenue

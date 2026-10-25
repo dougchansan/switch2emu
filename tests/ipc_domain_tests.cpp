@@ -54,18 +54,20 @@ int main(int argc,char** argv)
             check(!(get(response,4)&0x80000000U),"domain objects do not consume kernel handles");
             check(get(response,16)==1 && get(response,4)==13,"one successful output domain object");returned.push_back(uint32_t(get(response,48)));
         } else if(get(response,40)==0) {
-            check(get(response,16)==0,"scalar and event replies do not publish domain objects");
+            check(get(response,16)==0,"scalar, event and empty replies do not publish domain objects");
             if(decoded.object==7 && decoded.command==1) check(get(response,48,8)==resourceId && resourceId!=0,"SDK gets the real process-scoped resource identity");
+            else if(decoded.object==7 && decoded.command==10) check(get(response,4)==12 && traced.process().appletForegroundAcquired(),
+                "SDK foreground acquisition succeeds without a returned object or handle");
             else if(decoded.object==5 && decoded.command==0) check(get(response,8)==2 && get(response,12)!=0,"message event is a copied kernel handle");
             else check(decoded.object==5 && decoded.command==9 && get(response,48,1)==1,"headless application starts with its assigned virtual focus");
         } else {
             check(get(response,16)==0 && get(response,40)==Ipc::UnknownCommand,"unimplemented applet functionality remains an explicit domain service error");
-            check((decoded.object==7 && decoded.command==10) || (decoded.object==6 && decoded.command==13),"foreground acquisition and cleanup policy remain unsupported");
+            check(decoded.object==6 && decoded.command==13,"focus-handling mode remains unsupported during initialization and cleanup");
             if(decoded.command==13) check(decoded.payloadSize==3,"non-word-sized native payload is accepted structurally");
             ++unimplemented;
         }
     }
-    check(step.stop==Machine::Stop::Exited && step.exitCode==16217 && conversions==1 && sends==14 && unimplemented==2 &&
+    check(step.stop==Machine::Stop::Exited && step.exitCode==16217 && conversions==1 && sends==15 && unimplemented==2 &&
         returned==std::vector<uint32_t>{2,3,4,5,6,7,8,9,10} && closed==std::vector<uint32_t>{10,9,8,7,6,5,4,3,2},
         "actual SDK creates proxy and eight typed interfaces then closes them after the real unsupported operation");
     if(returned.size()!=9) return 1;
